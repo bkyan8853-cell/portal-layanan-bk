@@ -273,10 +273,18 @@ function loadDatabase() {
       }
       
       const updated = sanitizeDatabaseIds();
-      if (updated || sourceFile !== DATA_FILE) {
+      if (process.env.GOOGLE_SHEET_URL) {
+        db.settings.googleSheetUrl = process.env.GOOGLE_SHEET_URL;
+        db.settings.syncEnabled = true;
+      }
+      if (updated || sourceFile !== DATA_FILE || process.env.GOOGLE_SHEET_URL) {
         saveDatabase();
       }
     } else {
+      if (process.env.GOOGLE_SHEET_URL) {
+        db.settings.googleSheetUrl = process.env.GOOGLE_SHEET_URL;
+        db.settings.syncEnabled = true;
+      }
       calculateAllGuidance();
       saveDatabase();
     }
@@ -1060,6 +1068,18 @@ async function startServer() {
 
   app.listen(PORT, "0.0.0.0", () => {
     console.log(`Server "Sistem Pencatatan Pelanggaran Siswa" running on http://localhost:${PORT}`);
+    
+    // Pemicu sinkronisasi awal dari Google Sheets saat startup
+    if (db.settings.googleSheetUrl && db.settings.syncEnabled) {
+      console.log("Menjalankan sinkronisasi awal dari Google Sheets saat server startup...");
+      syncFromSheets()
+        .then(() => {
+          console.log("Sinkronisasi startup dari Google Sheets berhasil diselesaikan!");
+        })
+        .catch(err => {
+          console.error("Sinkronisasi startup dari Google Sheets gagal:", err);
+        });
+    }
   });
 }
 
