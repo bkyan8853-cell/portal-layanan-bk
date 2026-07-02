@@ -1,7 +1,6 @@
 import express from "express";
 import path from "path";
 import fs from "fs";
-import { createServer as createViteServer } from "vite";
 import { Siswa, Pelanggaran, Pencatatan, Pembinaan, User, AppSettings, DashboardStats, Remisi } from "./src/types";
 
 const app = express();
@@ -1010,6 +1009,7 @@ app.delete("/api/remisi/:id", authMiddleware, async (req, res) => {
 async function startServer() {
   if (process.env.NODE_ENV !== "production") {
     // Development Mode
+    const { createServer: createViteServer } = await import("vite");
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: "spa"
