@@ -15,45 +15,80 @@ app.use(express.json());
 // Middleware to normalize and log requests (especially on Vercel)
 app.use((req, res, next) => {
   const originalUrl = req.url || "";
-  console.log(`[Request] Method: ${req.method} | Original URL: ${originalUrl}`);
+  const xMatchedPath = (req.headers["x-matched-path"] as string) || "";
+  const xOriginalUrl = (req.headers["x-original-url"] as string) || "";
   
-  // Find the true requested path.
+  console.log(`[Request] Method: ${req.method} | URL: ${originalUrl} | x-matched: ${xMatchedPath} | x-original: ${xOriginalUrl}`);
+  
+  // List of all valid API route groups/resources in the application
+  const apiResources = [
+    "auth/login",
+    "auth/me",
+    "settings",
+    "students",
+    "violations",
+    "records",
+    "guidance",
+    "dashboard",
+    "remisi"
+  ];
+  
+  // Try to find if any of our known API resources is present in the requested URLs/headers
+  const sourcesToCheck = [originalUrl, xOriginalUrl, xMatchedPath];
+  let matchedResource: string | null = null;
+  let resourceSubpath = "";
+  
+  for (const src of sourcesToCheck) {
+    if (!src) continue;
+    let decoded = src;
+    try {
+      decoded = decodeURIComponent(src);
+    } catch (_) {}
+    
+    for (const resPath of apiResources) {
+      const searchStr = "/" + resPath;
+      const idx = decoded.indexOf(searchStr);
+      if (idx !== -1) {
+        matchedResource = resPath;
+        resourceSubpath = decoded.substring(idx + 1); // e.g. "auth/login" or "students/s123"
+        break;
+      }
+    }
+    if (matchedResource) break;
+  }
+  
   let targetPath = originalUrl;
   
-  if (process.env.VERCEL) {
-    const xOriginalUrl = req.headers["x-original-url"] as string;
-    if (xOriginalUrl) {
-      targetPath = xOriginalUrl;
+  if (matchedResource) {
+    // Reconstruct the clean API path
+    targetPath = "/api/" + resourceSubpath;
+    targetPath = targetPath.replace(/\/+/g, "/");
+  } else {
+    // If it's explicitly an API request but didn't match any known resource above,
+    // let's do a basic cleanup without forcing prepending /api to static files!
+    const isExplicitApi = originalUrl.includes("/api/") || xOriginalUrl.includes("/api/") || xMatchedPath.includes("/api/");
+    
+    if (isExplicitApi) {
+      let clean = originalUrl;
+      if (xOriginalUrl && xOriginalUrl.includes("/api/")) {
+        clean = xOriginalUrl;
+      } else if (xMatchedPath && xMatchedPath.includes("/api/")) {
+        clean = xMatchedPath;
+      }
+      
+      // Clean up index.ts / index.js patterns
+      clean = clean.replace(/^\/api\/index\.(ts|js|json)/i, "");
+      clean = clean.replace(/^\/api\/index/i, "");
+      clean = clean.replace(/^\/api/i, "");
+      
+      targetPath = "/api/" + clean;
+      targetPath = targetPath.replace(/\/+/g, "/");
     }
   }
   
-  // Clean up multiple slashes
-  targetPath = targetPath.replace(/\/+/g, "/");
-  
-  // Clean up any Vercel compiled serverless function naming artifacts
-  targetPath = targetPath.replace(/^\/api\/index\.(ts|js)/, "");
-  targetPath = targetPath.replace(/^\/api\/index/, "");
-  
-  if (!targetPath || targetPath === "/") {
-    targetPath = originalUrl;
-  }
-  
-  // Ensure the path starts with /api
-  if (!targetPath.startsWith("/api")) {
-    targetPath = "/api" + (targetPath.startsWith("/") ? "" : "/") + targetPath;
-  }
-  
-  // Normalize double /api/api if it ever occurs
-  if (targetPath.startsWith("/api/api/")) {
-    targetPath = targetPath.replace("/api/api/", "/api/");
-  }
-  
-  // Normalize double slashes again
-  targetPath = targetPath.replace(/\/+/g, "/");
-  
   if (targetPath !== originalUrl) {
     req.url = targetPath;
-    console.log(`[URL Normalize] Normalized ${originalUrl} -> ${req.url}`);
+    console.log(`[URL Normalize] Reconstructed ${originalUrl} -> ${req.url}`);
   }
   next();
 });
