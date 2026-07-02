@@ -14,64 +14,46 @@ app.use(express.json());
 
 // Middleware to normalize and log requests (especially on Vercel)
 app.use((req, res, next) => {
-  console.log(`[Request] ${req.method} ${req.url}`);
+  const originalUrl = req.url || "";
+  console.log(`[Request] Method: ${req.method} | Original URL: ${originalUrl}`);
   
-  if (req.url) {
-    const originalUrl = req.url;
-    let url = req.url;
-    
-    // Extract original URL from Vercel headers if available
-    if (process.env.VERCEL) {
-      const xOriginalUrl = req.headers["x-original-url"] as string;
-      const xMatchedPath = req.headers["x-matched-path"] as string;
-      
-      if (xOriginalUrl) {
-        url = xOriginalUrl;
-      } else if (xMatchedPath && xMatchedPath !== "/api/index" && xMatchedPath !== "/api/index.ts") {
-        url = xMatchedPath;
-      }
+  // Find the true requested path.
+  let targetPath = originalUrl;
+  
+  if (process.env.VERCEL) {
+    const xOriginalUrl = req.headers["x-original-url"] as string;
+    if (xOriginalUrl) {
+      targetPath = xOriginalUrl;
     }
-    
-    // 1. Clean up Vercel-specific function path artifacts if any
-    url = url.replace(/^\/api\/index\.(ts|js)/, "/api");
-    url = url.replace(/^\/api\/index/, "/api");
-    
-    // 2. If it is an API route but missing the "/api" prefix, prepend it
-    const apiRoutes = [
-      "auth/login",
-      "auth/me",
-      "settings",
-      "students",
-      "violations",
-      "records",
-      "guidance",
-      "dashboard",
-      "remisi"
-    ];
-    
-    let pathWithoutApi = url.split("?")[0].replace(/^\//, "");
-    if (pathWithoutApi.startsWith("api/")) {
-      pathWithoutApi = pathWithoutApi.substring(4);
-    }
-    
-    const isApi = apiRoutes.some(route => 
-      pathWithoutApi === route || pathWithoutApi.startsWith(route + "/")
-    );
-    
-    if (isApi) {
-      url = "/api/" + pathWithoutApi + (url.includes("?") ? "?" + url.split("?")[1] : "");
-    }
-    
-    // 3. Conversely, if Express has routes defined with "/api" but Vercel passes the request
-    // with double "/api/api", normalize it
-    if (url.startsWith("/api/api/")) {
-      url = url.replace("/api/api/", "/api/");
-    }
-    
-    if (url !== originalUrl) {
-      req.url = url;
-      console.log(`[URL Normalize] Normalized ${originalUrl} -> ${req.url}`);
-    }
+  }
+  
+  // Clean up multiple slashes
+  targetPath = targetPath.replace(/\/+/g, "/");
+  
+  // Clean up any Vercel compiled serverless function naming artifacts
+  targetPath = targetPath.replace(/^\/api\/index\.(ts|js)/, "");
+  targetPath = targetPath.replace(/^\/api\/index/, "");
+  
+  if (!targetPath || targetPath === "/") {
+    targetPath = originalUrl;
+  }
+  
+  // Ensure the path starts with /api
+  if (!targetPath.startsWith("/api")) {
+    targetPath = "/api" + (targetPath.startsWith("/") ? "" : "/") + targetPath;
+  }
+  
+  // Normalize double /api/api if it ever occurs
+  if (targetPath.startsWith("/api/api/")) {
+    targetPath = targetPath.replace("/api/api/", "/api/");
+  }
+  
+  // Normalize double slashes again
+  targetPath = targetPath.replace(/\/+/g, "/");
+  
+  if (targetPath !== originalUrl) {
+    req.url = targetPath;
+    console.log(`[URL Normalize] Normalized ${originalUrl} -> ${req.url}`);
   }
   next();
 });
@@ -217,10 +199,19 @@ function loadDatabase() {
     // On Vercel, if the writeable file in /tmp doesn't exist yet,
     // try to read from the read-only bundled .data.json in the project root
     if (process.env.VERCEL && !fs.existsSync(DATA_FILE)) {
-      const rootDataFile = path.join(process.cwd(), ".data.json");
-      if (fs.existsSync(rootDataFile)) {
-        sourceFile = rootDataFile;
-        console.log("Vercel: Initializing /tmp database from bundled project root .data.json");
+      const pathsToTry = [
+        path.join(process.cwd(), ".data.json"),
+        path.join(process.cwd(), "..", ".data.json"),
+        path.join(__dirname, ".data.json"),
+        path.join(__dirname, "..", ".data.json"),
+        path.join("/var/task", ".data.json")
+      ];
+      for (const p of pathsToTry) {
+        if (fs.existsSync(p)) {
+          sourceFile = p;
+          console.log(`Vercel: Initializing /tmp database from bundled path: ${p}`);
+          break;
+        }
       }
     }
 
