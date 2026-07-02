@@ -20,6 +20,18 @@ app.use((req, res, next) => {
     const originalUrl = req.url;
     let url = req.url;
     
+    // Extract original URL from Vercel headers if available
+    if (process.env.VERCEL) {
+      const xOriginalUrl = req.headers["x-original-url"] as string;
+      const xMatchedPath = req.headers["x-matched-path"] as string;
+      
+      if (xOriginalUrl) {
+        url = xOriginalUrl;
+      } else if (xMatchedPath && xMatchedPath !== "/api/index" && xMatchedPath !== "/api/index.ts") {
+        url = xMatchedPath;
+      }
+    }
+    
     // 1. Clean up Vercel-specific function path artifacts if any
     url = url.replace(/^\/api\/index\.(ts|js)/, "/api");
     url = url.replace(/^\/api\/index/, "/api");
@@ -37,15 +49,17 @@ app.use((req, res, next) => {
       "remisi"
     ];
     
-    // Get the clean path without leading slash and query params
-    const cleanPath = url.split("?")[0].replace(/^\//, "");
+    let pathWithoutApi = url.split("?")[0].replace(/^\//, "");
+    if (pathWithoutApi.startsWith("api/")) {
+      pathWithoutApi = pathWithoutApi.substring(4);
+    }
     
     const isApi = apiRoutes.some(route => 
-      cleanPath === route || cleanPath.startsWith(route + "/")
+      pathWithoutApi === route || pathWithoutApi.startsWith(route + "/")
     );
     
-    if (isApi && !url.startsWith("/api")) {
-      url = "/api/" + cleanPath + (url.includes("?") ? "?" + url.split("?")[1] : "");
+    if (isApi) {
+      url = "/api/" + pathWithoutApi + (url.includes("?") ? "?" + url.split("?")[1] : "");
     }
     
     // 3. Conversely, if Express has routes defined with "/api" but Vercel passes the request
@@ -203,7 +217,7 @@ function loadDatabase() {
     // On Vercel, if the writeable file in /tmp doesn't exist yet,
     // try to read from the read-only bundled .data.json in the project root
     if (process.env.VERCEL && !fs.existsSync(DATA_FILE)) {
-      const rootDataFile = path.join(__dirname, ".data.json");
+      const rootDataFile = path.join(process.cwd(), ".data.json");
       if (fs.existsSync(rootDataFile)) {
         sourceFile = rootDataFile;
         console.log("Vercel: Initializing /tmp database from bundled project root .data.json");
