@@ -251,10 +251,27 @@ function loadDatabase() {
 
     if (fs.existsSync(sourceFile)) {
       const data = fs.readFileSync(sourceFile, "utf-8");
-      db = JSON.parse(data);
-      if (!db.remisi) {
-        db.remisi = [];
+      try {
+        const parsed = JSON.parse(data);
+        db = {
+          siswa: Array.isArray(parsed.siswa) ? parsed.siswa : SEED_SISWA,
+          pelanggaran: Array.isArray(parsed.pelanggaran) ? parsed.pelanggaran : SEED_PELANGGARAN,
+          pencatatan: Array.isArray(parsed.pencatatan) ? parsed.pencatatan : SEED_PENCATATAN,
+          pembinaan: Array.isArray(parsed.pembinaan) ? parsed.pembinaan : [],
+          remisi: Array.isArray(parsed.remisi) ? parsed.remisi : [],
+          settings: parsed.settings ? {
+            googleSheetUrl: parsed.settings.googleSheetUrl || "",
+            syncEnabled: typeof parsed.settings.syncEnabled === "boolean" ? parsed.settings.syncEnabled : false
+          } : {
+            googleSheetUrl: "",
+            syncEnabled: false
+          }
+        };
+      } catch (parseErr) {
+        console.error("Gagal parse database JSON, menggunakan default:", parseErr);
+        // db holds defaults already
       }
+      
       const updated = sanitizeDatabaseIds();
       if (updated || sourceFile !== DATA_FILE) {
         saveDatabase();
@@ -437,7 +454,22 @@ function authMiddleware(req: express.Request, res: express.Response, next: expre
 
 // Auth API
 app.post("/api/auth/login", (req, res) => {
-  const { username, password, role } = req.body;
+  let body = req.body;
+  if (typeof body === "string") {
+    try {
+      body = JSON.parse(body);
+    } catch (_) {
+      // Keep it as is
+    }
+  }
+  
+  const username = body?.username;
+  const password = body?.password;
+  const role = body?.role;
+  
+  if (!username || !password || !role) {
+    return res.status(400).json({ success: false, message: "Username, Password, dan Role wajib diisi." });
+  }
   
   // Validasi login statis
   let authenticated = false;
