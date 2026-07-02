@@ -49,7 +49,9 @@ export default function PelanggaranView({ isActive }: PelanggaranViewProps) {
   // Filter infractions
   const filteredViolations = violations.filter(v => {
     const q = searchQuery.toLowerCase();
-    const matchesSearch = v.kode.toLowerCase().includes(q) || v.namaPelanggaran.toLowerCase().includes(q);
+    const kode = String(v.kode || "").toLowerCase();
+    const namaPelanggaran = String(v.namaPelanggaran || "").toLowerCase();
+    const matchesSearch = kode.includes(q) || namaPelanggaran.includes(q);
     const matchesCat = categoryFilter === "Semua" || v.kategori === categoryFilter;
     return matchesSearch && matchesCat;
   });

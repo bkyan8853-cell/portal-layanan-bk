@@ -113,7 +113,9 @@ export default function RemisiView({ isActive }: RemisiViewProps) {
 
     const query = val.toLowerCase();
     const filtered = students.filter(s => {
-      return s.nama.toLowerCase().includes(query) || s.nis.toLowerCase().includes(query);
+      const nama = String(s.nama || "").toLowerCase();
+      const nis = String(s.nis || "").toLowerCase();
+      return nama.includes(query) || nis.includes(query);
     });
     setStudentSuggestions(filtered.slice(0, 5));
     setShowStudentDropdown(true);
@@ -276,7 +278,10 @@ export default function RemisiView({ isActive }: RemisiViewProps) {
 
   // Filtered lists
   const filteredMetrics = studentsMetrics.filter(m => {
-    const matchQuery = m.student.nama.toLowerCase().includes(searchQuery.toLowerCase()) || m.student.nis.toLowerCase().includes(searchQuery.toLowerCase());
+    const sName = String(m.student?.nama || "").toLowerCase();
+    const sNis = String(m.student?.nis || "").toLowerCase();
+    const q = searchQuery.toLowerCase();
+    const matchQuery = sName.includes(q) || sNis.includes(q);
     const matchClass = selectedClass === "Semua Kelas" || m.student.kelas === selectedClass;
     return matchQuery && matchClass;
   });

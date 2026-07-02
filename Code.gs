@@ -67,6 +67,16 @@ function doGet(e) {
       result = getSheetData(ss, 'PENCATATAN');
     } else if (action === 'getGuidance') {
       result = getSheetData(ss, 'PEMBINAAN');
+    } else if (action === 'getAll') {
+      return createJsonResponse({
+        success: true,
+        data: {
+          siswa: getSheetData(ss, 'SISWA'),
+          pelanggaran: getSheetData(ss, 'PELANGGARAN'),
+          pencatatan: getSheetData(ss, 'PENCATATAN'),
+          pembinaan: getSheetData(ss, 'PEMBINAAN')
+        }
+      });
     } else {
       return createJsonResponse({ success: false, message: 'Action not found: ' + action });
     }

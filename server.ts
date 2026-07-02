@@ -323,15 +323,40 @@ async function fetchFromGoogleSheet<T>(action: string, fallbackData: T[]): Promi
       const data = result.data;
       if (action === "getViolations") {
         data.forEach((v: any) => {
-          if (!v.id) v.id = "p-" + (v.kode || Math.random().toString(36).substring(2, 6));
+          v.id = v.id ? String(v.id) : "p-" + (v.kode || Math.random().toString(36).substring(2, 6));
+          v.kode = String(v.kode || "");
+          v.namaPelanggaran = String(v.namaPelanggaran || "");
+          v.kategori = String(v.kategori || "Ringan");
+          v.poin = Number(v.poin || 0);
         });
       } else if (action === "getStudents") {
         data.forEach((s: any) => {
-          if (!s.id) s.id = "s-" + (s.nis || Math.random().toString(36).substring(2, 6));
+          s.id = s.id ? String(s.id) : "s-" + (s.nis || Math.random().toString(36).substring(2, 6));
+          s.nis = String(s.nis || "");
+          s.nama = String(s.nama || "");
+          s.kelas = String(s.kelas || "");
+          s.jk = String(s.jk || "L");
+          s.namaOrangTua = String(s.namaOrangTua || "");
+          s.noHp = String(s.noHp || "");
         });
       } else if (action === "getRecords") {
         data.forEach((r: any, idx: number) => {
-          if (!r.id) r.id = "rec-" + (r.nis || "x") + "-" + idx + "-" + (r.tanggal || "x");
+          r.id = r.id ? String(r.id) : "rec-" + (r.nis || "x") + "-" + idx + "-" + (r.tanggal || "x");
+          r.nis = String(r.nis || "");
+          r.namaSiswa = String(r.namaSiswa || "");
+          r.kelas = String(r.kelas || "");
+          r.pelanggaran = String(r.pelanggaran || "");
+          r.poin = Number(r.poin || 0);
+          r.petugas = String(r.petugas || "");
+          r.keterangan = String(r.keterangan || "");
+        });
+      } else if (action === "getGuidance") {
+        data.forEach((g: any) => {
+          g.id = g.id ? String(g.id) : "g-" + (g.nis || Math.random().toString(36).substring(2, 6));
+          g.nis = String(g.nis || "");
+          g.namaSiswa = String(g.namaSiswa || "");
+          g.totalPoin = Number(g.totalPoin || 0);
+          g.tindakan = String(g.tindakan || "");
         });
       }
       return data;
@@ -374,6 +399,73 @@ async function postToGoogleSheet(action: string, data: any): Promise<boolean> {
 async function syncFromSheets() {
   if (!db.settings.googleSheetUrl || !db.settings.syncEnabled) return;
   
+  console.log("Memulai Sinkronisasi super cepat (Single-Request) dari Google Sheets...");
+  try {
+    const url = `${db.settings.googleSheetUrl}?action=getAll`;
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`Google Apps Script responded with ${response.status}`);
+    }
+    const result = await response.json() as { success: boolean; data?: any; message?: string };
+    
+    if (result.success && result.data && result.data.siswa) {
+      const s = result.data.siswa;
+      const p = result.data.pelanggaran || [];
+      const r = result.data.pencatatan || [];
+      const g = result.data.pembinaan || [];
+      
+      // Sanitasi data
+      s.forEach((item: any) => {
+        item.id = item.id ? String(item.id) : "s-" + (item.nis || Math.random().toString(36).substring(2, 6));
+        item.nis = String(item.nis || "");
+        item.nama = String(item.nama || "");
+        item.kelas = String(item.kelas || "");
+        item.jk = String(item.jk || "L");
+        item.namaOrangTua = String(item.namaOrangTua || "");
+        item.noHp = String(item.noHp || "");
+      });
+      
+      p.forEach((item: any) => {
+        item.id = item.id ? String(item.id) : "p-" + (item.kode || Math.random().toString(36).substring(2, 6));
+        item.kode = String(item.kode || "");
+        item.namaPelanggaran = String(item.namaPelanggaran || "");
+        item.kategori = String(item.kategori || "Ringan");
+        item.poin = Number(item.poin || 0);
+      });
+      
+      r.forEach((item: any, idx: number) => {
+        item.id = item.id ? String(item.id) : "rec-" + (item.nis || "x") + "-" + idx + "-" + (item.tanggal || "x");
+        item.nis = String(item.nis || "");
+        item.namaSiswa = String(item.namaSiswa || "");
+        item.kelas = String(item.kelas || "");
+        item.pelanggaran = String(item.pelanggaran || "");
+        item.poin = Number(item.poin || 0);
+        item.petugas = String(item.petugas || "");
+        item.keterangan = String(item.keterangan || "");
+      });
+      
+      g.forEach((item: any) => {
+        item.id = item.id ? String(item.id) : "g-" + (item.nis || Math.random().toString(36).substring(2, 6));
+        item.nis = String(item.nis || "");
+        item.namaSiswa = String(item.namaSiswa || "");
+        item.totalPoin = Number(item.totalPoin || 0);
+        item.tindakan = String(item.tindakan || "");
+      });
+      
+      db.siswa = s;
+      db.pelanggaran = p;
+      db.pencatatan = r;
+      db.pembinaan = g;
+      saveDatabase();
+      console.log("Sinkronisasi super cepat berhasil diselesaikan!");
+      return;
+    } else {
+      console.log("Format getAll belum disupport atau gagal di Google Sheets. Beralih ke fallback multi-request...");
+    }
+  } catch (err) {
+    console.warn("Sinkronisasi super cepat gagal atau belum dideploy di Apps Script. Beralih ke fallback multi-request...", err);
+  }
+
   console.log("Memulai Sinkronisasi penuh dari Google Sheets (Secara Paralel)...");
   try {
     const [s, p, r, g] = await Promise.all([
@@ -388,6 +480,7 @@ async function syncFromSheets() {
     db.pencatatan = r;
     db.pembinaan = g;
     saveDatabase();
+    console.log("Sinkronisasi penuh (Secara Paralel) selesai.");
   } catch (err) {
     console.error("Gagal melakukan Sinkronisasi penuh dari Google Sheets:", err);
     throw err;

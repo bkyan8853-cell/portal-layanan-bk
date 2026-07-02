@@ -98,7 +98,9 @@ export default function PencatatanView({ isActive }: PencatatanViewProps) {
       if (isWali && currentUser?.kelas && s.kelas !== currentUser.kelas) {
         return false;
       }
-      return s.nama.toLowerCase().includes(query) || s.nis.toLowerCase().includes(query);
+      const nama = String(s.nama || "").toLowerCase();
+      const nis = String(s.nis || "").toLowerCase();
+      return nama.includes(query) || nis.includes(query);
     });
     setStudentSuggestions(filtered.slice(0, 5)); // Limit to 5
     setShowStudentDropdown(true);
@@ -203,13 +205,19 @@ export default function PencatatanView({ isActive }: PencatatanViewProps) {
       return false;
     }
     
+    const q = tableSearch.toLowerCase();
+    const namaSiswa = String(rec.namaSiswa || "").toLowerCase();
+    const nis = String(rec.nis || "").toLowerCase();
+    const pelanggaran = String(rec.pelanggaran || "").toLowerCase();
+    const petugas = String(rec.petugas || "").toLowerCase();
+    
     const matchesSearch = 
-      rec.namaSiswa.toLowerCase().includes(tableSearch.toLowerCase()) ||
-      rec.nis.toLowerCase().includes(tableSearch.toLowerCase()) ||
-      rec.pelanggaran.toLowerCase().includes(tableSearch.toLowerCase()) ||
-      rec.petugas.toLowerCase().includes(tableSearch.toLowerCase());
+      namaSiswa.includes(q) ||
+      nis.includes(q) ||
+      pelanggaran.includes(q) ||
+      petugas.includes(q);
       
-    const matchesClass = !classFilter || rec.kelas.toLowerCase().includes(classFilter.toLowerCase());
+    const matchesClass = !classFilter || String(rec.kelas || "").toLowerCase().includes(classFilter.toLowerCase());
     
     return matchesSearch && matchesClass;
   }).sort((a, b) => new Date(b.tanggal).getTime() - new Date(a.tanggal).getTime()); // Latest first

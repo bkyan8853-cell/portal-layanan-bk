@@ -4,7 +4,7 @@ import { User } from "./types";
 import { 
   BookOpen, Users, AlertTriangle, Tag, History, FileSpreadsheet, 
   Server, LogOut, UserCheck, Menu, X, ShieldAlert, Award, 
-  ShieldCheck, HelpCircle, GraduationCap 
+  ShieldCheck, HelpCircle, GraduationCap, RefreshCw
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 
@@ -28,6 +28,33 @@ export default function App() {
   
   // Selected Student for Detail Modal
   const [selectedStudentNis, setSelectedStudentNis] = useState<string | null>(null);
+
+  // Sync State
+  const [syncLoading, setSyncLoading] = useState(false);
+  const [syncStatus, setSyncStatus] = useState<"idle" | "success" | "error">("idle");
+
+  const handleSync = async () => {
+    setSyncLoading(true);
+    setSyncStatus("idle");
+    try {
+      const res = await googleSheetApi.triggerSync();
+      if (res.success) {
+        setSyncStatus("success");
+        setTimeout(() => {
+          window.location.reload();
+        }, 1200);
+      } else {
+        setSyncStatus("error");
+        alert("Gagal sinkronisasi: " + res.message);
+      }
+    } catch (err: any) {
+      setSyncStatus("error");
+      alert("Gagal sinkronisasi: " + (err.message || err));
+    } finally {
+      setSyncLoading(false);
+      setTimeout(() => setSyncStatus("idle"), 3000);
+    }
+  };
 
   useEffect(() => {
     // Muat user yang sedang login saat inisialisasi
@@ -139,6 +166,32 @@ export default function App() {
               );
             })}
           </nav>
+
+          {/* Quick Sync Button */}
+          <div className="px-4 pb-4 hidden md:block">
+            <button
+              onClick={handleSync}
+              disabled={syncLoading}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition-all duration-150 border cursor-pointer ${
+                syncLoading
+                  ? "bg-slate-800 text-slate-500 border-slate-800"
+                  : syncStatus === "success"
+                  ? "bg-emerald-950/20 text-emerald-400 border-emerald-800/30"
+                  : syncStatus === "error"
+                  ? "bg-red-950/20 text-red-400 border-red-800/30"
+                  : "bg-slate-850 hover:bg-slate-800/85 text-blue-400 border-slate-800/50 hover:border-slate-700"
+              }`}
+            >
+              <RefreshCw className={`h-4.5 w-4.5 shrink-0 ${syncLoading ? "animate-spin text-blue-400" : syncStatus === "success" ? "text-emerald-400" : "text-blue-400"}`} />
+              <span>
+                {syncLoading 
+                  ? "Sinkronisasi..." 
+                  : syncStatus === "success" 
+                  ? "Berhasil!" 
+                  : "Sinkronkan Sheets"}
+              </span>
+            </button>
+          </div>
         </div>
 
         {/* Sidebar Footer Logout Button */}
@@ -183,6 +236,33 @@ export default function App() {
                 </button>
               );
             })}
+            
+            <button
+              onClick={() => {
+                setMobileMenuOpen(false);
+                handleSync();
+              }}
+              disabled={syncLoading}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition-all border cursor-pointer ${
+                syncLoading
+                  ? "bg-slate-800 text-slate-500 border-slate-800"
+                  : syncStatus === "success"
+                  ? "bg-emerald-950/20 text-emerald-400 border-emerald-800/30"
+                  : syncStatus === "error"
+                  ? "bg-red-950/20 text-red-400 border-red-800/30"
+                  : "bg-slate-850 hover:bg-slate-800/85 text-blue-400 border-slate-800/50 hover:border-slate-700"
+              }`}
+            >
+              <RefreshCw className={`h-4.5 w-4.5 shrink-0 ${syncLoading ? "animate-spin text-blue-400" : "text-blue-400"}`} />
+              <span>
+                {syncLoading 
+                  ? "Menyingkronkan..." 
+                  : syncStatus === "success" 
+                  ? "Sinkron Berhasil!" 
+                  : "Sinkronkan Sheets"}
+              </span>
+            </button>
+
             <button
               onClick={() => {
                 setMobileMenuOpen(false);

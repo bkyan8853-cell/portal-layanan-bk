@@ -145,10 +145,13 @@ export default function SiswaView({ onViewDetail, isActive }: SiswaViewProps) {
       return false;
     }
     const q = searchQuery.toLowerCase();
+    const nama = String(student.nama || "").toLowerCase();
+    const nis = String(student.nis || "").toLowerCase();
+    const kelas = String(student.kelas || "").toLowerCase();
     return (
-      student.nama.toLowerCase().includes(q) ||
-      student.nis.toLowerCase().includes(q) ||
-      student.kelas.toLowerCase().includes(q)
+      nama.includes(q) ||
+      nis.includes(q) ||
+      kelas.includes(q)
     );
   });
 
