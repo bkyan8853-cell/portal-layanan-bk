@@ -12,6 +12,19 @@ const DATA_FILE = process.env.VERCEL
 
 app.use(express.json());
 
+// Middleware to normalize and log requests (especially on Vercel)
+app.use((req, res, next) => {
+  console.log(`[Request] ${req.method} ${req.url}`);
+  
+  // If running on Vercel and the url doesn't start with /api, but is handled by our api function
+  if (process.env.VERCEL && req.url && !req.url.startsWith("/api")) {
+    const originalUrl = req.url;
+    req.url = "/api" + (originalUrl.startsWith("/") ? "" : "/") + originalUrl;
+    console.log(`[Vercel URL Rewrite] Normalized ${originalUrl} -> ${req.url}`);
+  }
+  next();
+});
+
 // Inisialisasi Database Lokal / Fallback dengan Data Awal yang Kaya dan Realistis
 const SEED_SISWA: Siswa[] = [
   { id: "s1", nis: "24001", nama: "Ahmad Rifai", kelas: "XI-IPA-1", jk: "L", namaOrangTua: "Hadi Wijaya", noHp: "081234567890" },
@@ -148,14 +161,26 @@ function sanitizeDatabaseIds() {
 
 function loadDatabase() {
   try {
-    if (fs.existsSync(DATA_FILE)) {
-      const data = fs.readFileSync(DATA_FILE, "utf-8");
+    let sourceFile = DATA_FILE;
+    
+    // On Vercel, if the writeable file in /tmp doesn't exist yet,
+    // try to read from the read-only bundled .data.json in the project root
+    if (process.env.VERCEL && !fs.existsSync(DATA_FILE)) {
+      const rootDataFile = path.join(process.cwd(), ".data.json");
+      if (fs.existsSync(rootDataFile)) {
+        sourceFile = rootDataFile;
+        console.log("Vercel: Initializing /tmp database from bundled project root .data.json");
+      }
+    }
+
+    if (fs.existsSync(sourceFile)) {
+      const data = fs.readFileSync(sourceFile, "utf-8");
       db = JSON.parse(data);
       if (!db.remisi) {
         db.remisi = [];
       }
       const updated = sanitizeDatabaseIds();
-      if (updated) {
+      if (updated || sourceFile !== DATA_FILE) {
         saveDatabase();
       }
     } else {
