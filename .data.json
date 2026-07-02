@@ -1,0 +1,304 @@
+{
+  "siswa": [
+    {
+      "id": "s1",
+      "nis": "24001",
+      "nama": "Ahmad Rifai",
+      "kelas": "XI-IPA-1",
+      "jk": "L",
+      "namaOrangTua": "Hadi Wijaya",
+      "noHp": "081234567890"
+    },
+    {
+      "id": "s2",
+      "nis": "24002",
+      "nama": "Siti Aminah",
+      "kelas": "XI-IPA-1",
+      "jk": "P",
+      "namaOrangTua": "Slamet Santoso",
+      "noHp": "081345678901"
+    },
+    {
+      "id": "s3",
+      "nis": "24003",
+      "nama": "Budi Santoso",
+      "kelas": "XI-IPA-2",
+      "jk": "L",
+      "namaOrangTua": "Kusmono",
+      "noHp": "081456789012"
+    },
+    {
+      "id": "s4",
+      "nis": "24004",
+      "nama": "Dewi Lestari",
+      "kelas": "XI-IPA-2",
+      "jk": "P",
+      "namaOrangTua": "Budi Utomo",
+      "noHp": "081567890123"
+    },
+    {
+      "id": "s5",
+      "nis": "24005",
+      "nama": "Rian Hidayat",
+      "kelas": "XI-IPS-1",
+      "jk": "L",
+      "namaOrangTua": "Rahmat",
+      "noHp": "081678901234"
+    },
+    {
+      "id": "s6",
+      "nis": "24006",
+      "nama": "Indah Permata",
+      "kelas": "XI-IPS-1",
+      "jk": "P",
+      "namaOrangTua": "Suryono",
+      "noHp": "081789012345"
+    },
+    {
+      "id": "s7",
+      "nis": "24007",
+      "nama": "Eko Prasetyo",
+      "kelas": "XII-IPA-1",
+      "jk": "L",
+      "namaOrangTua": "Djoko",
+      "noHp": "081890123456"
+    },
+    {
+      "id": "s8",
+      "nis": "24008",
+      "nama": "Putri Utami",
+      "kelas": "XII-IPA-1",
+      "jk": "P",
+      "namaOrangTua": "Wawan",
+      "noHp": "081901234567"
+    },
+    {
+      "id": "s9",
+      "nis": "24009",
+      "nama": "Adi Wijaya",
+      "kelas": "XII-IPS-1",
+      "jk": "L",
+      "namaOrangTua": "Yanto",
+      "noHp": "081212345678"
+    },
+    {
+      "id": "s10",
+      "nis": "24010",
+      "nama": "Mega Saputri",
+      "kelas": "XII-IPS-1",
+      "jk": "P",
+      "namaOrangTua": "Hermawan",
+      "noHp": "081313456789"
+    },
+    {
+      "id": "s11",
+      "nis": "24011",
+      "nama": "Dodi Kurniawan",
+      "kelas": "XI-IPA-1",
+      "jk": "L",
+      "namaOrangTua": "Mulyadi",
+      "noHp": "081414567890"
+    },
+    {
+      "id": "s12",
+      "nis": "24012",
+      "nama": "Larasati",
+      "kelas": "XI-IPA-1",
+      "jk": "P",
+      "namaOrangTua": "Sudrajat",
+      "noHp": "081515678901"
+    }
+  ],
+  "pelanggaran": [
+    {
+      "id": "p1",
+      "kode": "A01",
+      "namaPelanggaran": "Terlambat Masuk Sekolah (< 15 menit)",
+      "kategori": "Ringan",
+      "poin": 5
+    },
+    {
+      "id": "p2",
+      "kode": "A02",
+      "namaPelanggaran": "Atribut Seragam Tidak Lengkap",
+      "kategori": "Ringan",
+      "poin": 5
+    },
+    {
+      "id": "p3",
+      "kode": "A03",
+      "namaPelanggaran": "Rambut Gondrong / Tidak Rapi (Siswa Laki-laki)",
+      "kategori": "Ringan",
+      "poin": 10
+    },
+    {
+      "id": "p4",
+      "kode": "A04",
+      "namaPelanggaran": "Membuang Sampah Sembarangan",
+      "kategori": "Ringan",
+      "poin": 5
+    },
+    {
+      "id": "p5",
+      "kode": "B01",
+      "namaPelanggaran": "Membolos Sekolah / Meninggalkan Kelas Tanpa Izin",
+      "kategori": "Sedang",
+      "poin": 15
+    },
+    {
+      "id": "p6",
+      "kode": "B02",
+      "namaPelanggaran": "Membawa HP saat jam pelajaran tanpa izin",
+      "kategori": "Sedang",
+      "poin": 15
+    },
+    {
+      "id": "p7",
+      "kode": "B03",
+      "namaPelanggaran": "Membawa & Bermain Kartu / Game Judi di Sekolah",
+      "kategori": "Sedang",
+      "poin": 20
+    },
+    {
+      "id": "p8",
+      "kode": "B04",
+      "namaPelanggaran": "Merokok di Lingkungan Sekolah",
+      "kategori": "Sedang",
+      "poin": 25
+    },
+    {
+      "id": "p9",
+      "kode": "C01",
+      "namaPelanggaran": "Perkelahian / Tawuran",
+      "kategori": "Berat",
+      "poin": 50
+    },
+    {
+      "id": "p10",
+      "kode": "C02",
+      "namaPelanggaran": "Melakukan Bullying (Perundungan) Fisik/Verbal",
+      "kategori": "Berat",
+      "poin": 50
+    },
+    {
+      "id": "p11",
+      "kode": "C03",
+      "namaPelanggaran": "Pencurian atau Tindakan Kriminal",
+      "kategori": "Berat",
+      "poin": 75
+    },
+    {
+      "id": "p12",
+      "kode": "C04",
+      "namaPelanggaran": "Membawa / Mengonsumsi Miras & Narkoba",
+      "kategori": "Berat",
+      "poin": 100
+    }
+  ],
+  "pencatatan": [
+    {
+      "id": "rec1",
+      "tanggal": "2026-06-15",
+      "nis": "24001",
+      "namaSiswa": "Ahmad Rifai",
+      "kelas": "XI-IPA-1",
+      "pelanggaran": "Terlambat Masuk Sekolah (< 15 menit)",
+      "poin": 5,
+      "petugas": "Drs. Joko Susilo (Guru Piket)",
+      "keterangan": "Terlambat karena ban motor bocor"
+    },
+    {
+      "id": "rec2",
+      "tanggal": "2026-06-16",
+      "nis": "24001",
+      "namaSiswa": "Ahmad Rifai",
+      "kelas": "XI-IPA-1",
+      "pelanggaran": "Rambut Gondrong / Tidak Rapi (Siswa Laki-laki)",
+      "poin": 10,
+      "petugas": "Iien Puspitasari, S.Pd (Koordinator BK)",
+      "keterangan": "Sudah ditegur sebelumnya"
+    },
+    {
+      "id": "rec3",
+      "tanggal": "2026-06-18",
+      "nis": "24003",
+      "namaSiswa": "Budi Santoso",
+      "kelas": "XI-IPA-2",
+      "pelanggaran": "Membolos Sekolah / Meninggalkan Kelas Tanpa Izin",
+      "poin": 15,
+      "petugas": "Dra. Endang (Wali Kelas)",
+      "keterangan": "Melompati pagar belakang sekolah"
+    },
+    {
+      "id": "rec4",
+      "tanggal": "2026-06-20",
+      "nis": "24005",
+      "namaSiswa": "Rian Hidayat",
+      "kelas": "XI-IPS-1",
+      "pelanggaran": "Merokok di Lingkungan Sekolah",
+      "poin": 25,
+      "petugas": "Iien Puspitasari, S.Pd (Koordinator BK)",
+      "keterangan": "Tertangkap merokok di kantin belakang"
+    },
+    {
+      "id": "rec5",
+      "tanggal": "2026-06-25",
+      "nis": "24005",
+      "namaSiswa": "Rian Hidayat",
+      "kelas": "XI-IPS-1",
+      "pelanggaran": "Melakukan Bullying (Perundungan) Fisik/Verbal",
+      "poin": 50,
+      "petugas": "Iien Puspitasari, S.Pd (Koordinator BK)",
+      "keterangan": "Mengintimidasi siswa kelas X"
+    },
+    {
+      "id": "rec6",
+      "tanggal": "2026-06-28",
+      "nis": "24007",
+      "namaSiswa": "Eko Prasetyo",
+      "kelas": "XII-IPA-1",
+      "pelanggaran": "Atribut Seragam Tidak Lengkap",
+      "poin": 5,
+      "petugas": "Siti Rahma, S.Pd (Guru Piket)",
+      "keterangan": "Tidak memakai sabuk sekolah"
+    }
+  ],
+  "pembinaan": [
+    {
+      "id": "g-24001",
+      "nis": "24001",
+      "namaSiswa": "Ahmad Rifai",
+      "totalPoin": 15,
+      "tindakan": "Teguran Lisan",
+      "tanggal": "2026-06-30"
+    },
+    {
+      "id": "g-24003",
+      "nis": "24003",
+      "namaSiswa": "Budi Santoso",
+      "totalPoin": 15,
+      "tindakan": "Teguran Lisan",
+      "tanggal": "2026-06-30"
+    },
+    {
+      "id": "g-24005",
+      "nis": "24005",
+      "namaSiswa": "Rian Hidayat",
+      "totalPoin": 75,
+      "tindakan": "Pemanggilan Orang Tua",
+      "tanggal": "2026-06-30"
+    },
+    {
+      "id": "g-24007",
+      "nis": "24007",
+      "namaSiswa": "Eko Prasetyo",
+      "totalPoin": 5,
+      "tindakan": "Teguran Lisan",
+      "tanggal": "2026-06-30"
+    }
+  ],
+  "settings": {
+    "googleSheetUrl": "",
+    "syncEnabled": false
+  }
+}
