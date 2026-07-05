@@ -30,29 +30,7 @@ const DATA_FILE = process.env.VERCEL
   ? path.join("/tmp", ".data.json")
   : path.join(process.cwd(), ".data.json");
 
-app.use((req, res, next) => {
-  if (process.env.VERCEL) {
-    // Di Vercel, body parser bawaan platform sudah memproses request body.
-    // Menjalankan express.json() di sini akan menyebabkan request menggantung (hang) karena stream sudah habis terbaca.
-    if (req.body && typeof req.body === "string") {
-      try {
-        req.body = JSON.parse(req.body);
-      } catch (_) {}
-    } else if (req.body && Buffer.isBuffer(req.body)) {
-      try {
-        req.body = JSON.parse(req.body.toString("utf-8"));
-      } catch (_) {}
-    }
-    next();
-  } else {
-    // Pada local development/container biasa:
-    if (req.body && typeof req.body === "object") {
-      next();
-    } else {
-      express.json()(req, res, next);
-    }
-  }
-});
+app.use(express.json());
 
 // Middleware to normalize and log requests (especially on Vercel)
 app.use((req, res, next) => {
@@ -379,6 +357,10 @@ function loadDatabase() {
 // Simpan ke file
 function saveDatabase() {
   try {
+    const dir = path.dirname(DATA_FILE);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
     fs.writeFileSync(DATA_FILE, JSON.stringify(db, null, 2), "utf-8");
   } catch (err) {
     console.error("Gagal menyimpan database lokal:", err);
