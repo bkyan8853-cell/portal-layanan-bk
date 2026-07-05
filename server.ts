@@ -30,7 +30,27 @@ const DATA_FILE = process.env.VERCEL
   ? path.join("/tmp", ".data.json")
   : path.join(process.cwd(), ".data.json");
 
-app.use(express.json());
+// Smart adaptive body parser middleware for Vercel and Local compatibility
+app.use((req, res, next) => {
+  if (req.body !== undefined && req.body !== null) {
+    if (typeof req.body === "string") {
+      try {
+        req.body = JSON.parse(req.body);
+      } catch (_) {}
+    } else if (Buffer.isBuffer(req.body)) {
+      try {
+        req.body = JSON.parse(req.body.toString("utf-8"));
+      } catch (_) {}
+    }
+    return next();
+  }
+  
+  express.json()(req, res, (err) => {
+    if (err) return next(err);
+    express.urlencoded({ extended: true })(req, res, next);
+  });
+});
+
 
 // Middleware to normalize and log requests (especially on Vercel)
 app.use((req, res, next) => {
