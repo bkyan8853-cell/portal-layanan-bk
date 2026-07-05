@@ -1,7 +1,12 @@
 import express from "express";
 import path from "path";
 import fs from "fs";
+import { fileURLToPath } from "url";
 import { Siswa, Pelanggaran, Pencatatan, Pembinaan, User, AppSettings, DashboardStats, Remisi, Absensi } from "./src/types";
+
+// Polyfill __dirname and __filename for ES Modules in Node.js
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = 3000;
@@ -9,7 +14,13 @@ const DATA_FILE = process.env.VERCEL
   ? path.join("/tmp", ".data.json")
   : path.join(process.cwd(), ".data.json");
 
-app.use(express.json());
+app.use((req, res, next) => {
+  if (req.body && typeof req.body === "object") {
+    next();
+  } else {
+    express.json()(req, res, next);
+  }
+});
 
 // Middleware to normalize and log requests (especially on Vercel)
 app.use((req, res, next) => {
