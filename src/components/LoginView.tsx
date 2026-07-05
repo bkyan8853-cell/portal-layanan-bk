@@ -29,7 +29,10 @@ export default function LoginView({ onLoginSuccess }: LoginViewProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!username.trim() || !password.trim()) {
+    const sanitizedUsername = username.toLowerCase().trim();
+    const sanitizedPassword = password.trim();
+
+    if (!sanitizedUsername || !sanitizedPassword) {
       setError("Username dan Password wajib diisi.");
       return;
     }
@@ -38,7 +41,7 @@ export default function LoginView({ onLoginSuccess }: LoginViewProps) {
     setError(null);
 
     try {
-      await googleSheetApi.login(username, password, role);
+      await googleSheetApi.login(sanitizedUsername, sanitizedPassword, role);
       onLoginSuccess();
     } catch (err: any) {
       setError(err.message || "Gagal masuk. Silakan coba lagi.");
@@ -179,6 +182,35 @@ export default function LoginView({ onLoginSuccess }: LoginViewProps) {
             )}
           </button>
         </form>
+
+        {/* Credentials Reference Help Panel */}
+        <div className="mt-6 pt-5 border-t border-slate-100">
+          <div className="bg-slate-50/80 border border-slate-100 rounded-xl p-3 text-left">
+            <span className="block text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-2">
+              Kredensial Akses Demo (Sistem SIPPS)
+            </span>
+            <div className="space-y-1.5 text-xs text-slate-600 font-medium">
+              <div className="flex justify-between items-center py-0.5 border-b border-slate-200/55">
+                <span className="font-bold text-slate-700">Koordinator BK:</span>
+                <span className="font-mono bg-white px-1.5 py-0.5 rounded border border-slate-100 text-[11px]">
+                  username: <strong className="text-blue-600 font-bold">gurubk</strong> / pass: <strong className="text-blue-600 font-bold">bk123</strong>
+                </span>
+              </div>
+              <div className="flex justify-between items-center py-0.5 border-b border-slate-200/55">
+                <span className="font-bold text-slate-700">Wali Kelas:</span>
+                <span className="font-mono bg-white px-1.5 py-0.5 rounded border border-slate-100 text-[11px]">
+                  username: <strong className="text-blue-600 font-bold">walikelas</strong> / pass: <strong className="text-blue-600 font-bold">wali123</strong>
+                </span>
+              </div>
+              <div className="flex justify-between items-center py-0.5">
+                <span className="font-bold text-slate-700">Admin Utama:</span>
+                <span className="font-mono bg-white px-1.5 py-0.5 rounded border border-slate-100 text-[11px]">
+                  username: <strong className="text-blue-600 font-bold">admin</strong> / pass: <strong className="text-blue-600 font-bold">admin123</strong>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
 
       </div>
     </div>

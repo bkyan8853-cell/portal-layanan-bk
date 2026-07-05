@@ -51,10 +51,16 @@ function doGet(e) {
   const action = e.parameter.action;
   let ss;
   try {
-    ss = SpreadsheetApp.openById("12Lq9U__OezS7sjRZyZlkJExqWD17o-cvKx9WzVgfVCo");
+    ss = SpreadsheetApp.getActiveSpreadsheet();
+    if (!ss) {
+      throw new Error("Active spreadsheet is null");
+    }
   } catch (err) {
-    const sheetId = SpreadsheetApp.getActiveSpreadsheet().getId();
-    ss = SpreadsheetApp.openById(sheetId);
+    try {
+      ss = SpreadsheetApp.openById("1UJZGkmLpTV99LMdEY70VIOFlqPUVBNfjjd7rI5ZuOqM");
+    } catch (e2) {
+      ss = SpreadsheetApp.openById("12Lq9U__OezS7sjRZyZlkJExqWD17o-cvKx9WzVgfVCo");
+    }
   }
   
   let result;
@@ -108,10 +114,16 @@ function doPost(e) {
     
     let ss;
     try {
-      ss = SpreadsheetApp.openById("12Lq9U__OezS7sjRZyZlkJExqWD17o-cvKx9WzVgfVCo");
+      ss = SpreadsheetApp.getActiveSpreadsheet();
+      if (!ss) {
+        throw new Error("Active spreadsheet is null");
+      }
     } catch (err) {
-      const sheetId = SpreadsheetApp.getActiveSpreadsheet().getId();
-      ss = SpreadsheetApp.openById(sheetId);
+      try {
+        ss = SpreadsheetApp.openById("1UJZGkmLpTV99LMdEY70VIOFlqPUVBNfjjd7rI5ZuOqM");
+      } catch (e2) {
+        ss = SpreadsheetApp.openById("12Lq9U__OezS7sjRZyZlkJExqWD17o-cvKx9WzVgfVCo");
+      }
     }
     
     let result;

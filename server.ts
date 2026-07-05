@@ -409,20 +409,45 @@ async function fetchFromGoogleSheet<T>(action: string, fallbackData: T[]): Promi
   }
 }
 
-// Mengirim data ke Google Sheet
+// Mengirim data ke Google Sheet dengan penanganan redirect manual
 async function postToGoogleSheet(action: string, data: any): Promise<boolean> {
   if (!db.settings.googleSheetUrl || !db.settings.syncEnabled) {
     return false;
   }
   
   try {
-    const url = db.settings.googleSheetUrl;
+    let url = db.settings.googleSheetUrl;
     const body = { action, ...data };
-    const response = await fetch(url, {
+    
+    // Google Apps Script mengembalikan redirect HTTP 302 saat menerima POST request.
+    // Secara default, native fetch (undici) di Node.js dengan redirect: "follow" akan merubah method
+    // dari POST menjadi GET saat mengikuti redirect 302, namun tetap mempertahankan header khusus POST
+    // seperti Content-Type dan Content-Length tanpa menyertakan body, yang menyebabkan server tujuan menolaknya.
+    // Oleh karena itu, kita menangani redirect secara manual: kirim POST pertama, lalu ikuti redirect dengan GET tanpa body.
+    let response = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body)
+      body: JSON.stringify(body),
+      redirect: "manual"
     });
+
+    let redirectCount = 0;
+    while ((response.status === 301 || response.status === 302 || response.status === 307 || response.status === 308) && redirectCount < 5) {
+      const redirectUrl = response.headers.get("location");
+      if (!redirectUrl) break;
+      
+      url = new URL(redirectUrl, url).toString();
+      redirectCount++;
+      
+      // Request redirect ke Google usercontent harus menggunakan metode GET,
+      // tanpa menyertakan body dan header khusus POST agar dapat diterima dengan benar.
+      response = await fetch(url, {
+        method: "GET",
+        headers: { "Accept": "application/json" },
+        redirect: "manual"
+      });
+    }
+
     if (!response.ok) {
       throw new Error(`Google Apps Script responded with ${response.status}`);
     }
@@ -603,13 +628,16 @@ app.post("/api/auth/login", (req, res) => {
     }
   }
   
-  const username = body?.username;
-  const password = body?.password;
+  const rawUsername = body?.username;
+  const rawPassword = body?.password;
   const role = body?.role;
   
-  if (!username || !password || !role) {
+  if (!rawUsername || !rawPassword || !role) {
     return res.status(400).json({ success: false, message: "Username, Password, dan Role wajib diisi." });
   }
+
+  const username = String(rawUsername).toLowerCase().trim();
+  const password = String(rawPassword).trim();
   
   // Validasi login statis
   let authenticated = false;
