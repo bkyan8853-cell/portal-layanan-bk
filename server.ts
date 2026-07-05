@@ -4,9 +4,25 @@ import fs from "fs";
 import { fileURLToPath } from "url";
 import { Siswa, Pelanggaran, Pencatatan, Pembinaan, User, AppSettings, DashboardStats, Remisi, Absensi } from "./src/types";
 
-// Polyfill __dirname and __filename for ES Modules in Node.js
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+// Polyfill __dirname and __filename for ES Modules in Node.js safely
+let __filename = "";
+let __dirname = "";
+
+try {
+  if (import.meta && import.meta.url) {
+    __filename = fileURLToPath(import.meta.url);
+    __dirname = path.dirname(__filename);
+  }
+} catch (err) {
+  console.warn("Failed to derive __filename and __dirname from import.meta.url, using process.cwd()", err);
+}
+
+if (!__filename) {
+  __filename = process.cwd();
+}
+if (!__dirname) {
+  __dirname = process.cwd();
+}
 
 const app = express();
 const PORT = 3000;
@@ -15,10 +31,26 @@ const DATA_FILE = process.env.VERCEL
   : path.join(process.cwd(), ".data.json");
 
 app.use((req, res, next) => {
-  if (req.body && typeof req.body === "object") {
+  if (process.env.VERCEL) {
+    // Di Vercel, body parser bawaan platform sudah memproses request body.
+    // Menjalankan express.json() di sini akan menyebabkan request menggantung (hang) karena stream sudah habis terbaca.
+    if (req.body && typeof req.body === "string") {
+      try {
+        req.body = JSON.parse(req.body);
+      } catch (_) {}
+    } else if (req.body && Buffer.isBuffer(req.body)) {
+      try {
+        req.body = JSON.parse(req.body.toString("utf-8"));
+      } catch (_) {}
+    }
     next();
   } else {
-    express.json()(req, res, next);
+    // Pada local development/container biasa:
+    if (req.body && typeof req.body === "object") {
+      next();
+    } else {
+      express.json()(req, res, next);
+    }
   }
 });
 
@@ -630,53 +662,64 @@ function authMiddleware(req: express.Request, res: express.Response, next: expre
 
 // Auth API
 app.post("/api/auth/login", (req, res) => {
-  let body = req.body;
-  if (typeof body === "string") {
-    try {
-      body = JSON.parse(body);
-    } catch (_) {
-      // Keep it as is
+  try {
+    let body = req.body;
+    if (typeof body === "string") {
+      try {
+        body = JSON.parse(body);
+      } catch (_) {
+        // Keep it as is
+      }
     }
-  }
-  
-  const rawUsername = body?.username;
-  const rawPassword = body?.password;
-  const role = body?.role;
-  
-  if (!rawUsername || !rawPassword || !role) {
-    return res.status(400).json({ success: false, message: "Username, Password, dan Role wajib diisi." });
-  }
+    
+    console.log("[Login API] Received body:", body);
+    
+    const rawUsername = body?.username;
+    const rawPassword = body?.password;
+    const role = body?.role;
+    
+    if (!rawUsername || !rawPassword || !role) {
+      return res.status(400).json({ success: false, message: "Username, Password, dan Role wajib diisi." });
+    }
 
-  const username = String(rawUsername).toLowerCase().trim();
-  const password = String(rawPassword).trim();
-  
-  // Validasi login statis
-  let authenticated = false;
-  let nama = "";
-  let kelas: string | undefined = undefined;
-  let userRole = role;
-  
-  if (username === "admin" && password === "admin123") {
-    authenticated = true;
-    nama = "Admin Utama BK";
-    userRole = "Admin";
-  } else if (username === "gurubk" && password === "bk123") {
-    authenticated = true;
-    nama = "Filmayenti, S.Pd";
-    userRole = "Koordinator BK";
-  } else if (username === "walikelas" && password === "wali123") {
-    authenticated = true;
-    nama = "Wali Kelas";
-    kelas = "XI-IPA-1"; // Wali kelas kelas XI-IPA-1
-    userRole = "Wali Kelas";
-  }
-  
-  if (authenticated) {
-    const user: User = { username, role: userRole, nama, kelas };
-    const token = generateToken(user);
-    res.json({ success: true, token, user });
-  } else {
-    res.status(400).json({ success: false, message: "Kredensial salah atau Role tidak sesuai." });
+    const username = String(rawUsername).toLowerCase().trim();
+    const password = String(rawPassword).trim();
+    
+    // Validasi login statis
+    let authenticated = false;
+    let nama = "";
+    let kelas: string | undefined = undefined;
+    let userRole = role;
+    
+    if (username === "admin" && password === "admin123") {
+      authenticated = true;
+      nama = "Admin Utama BK";
+      userRole = "Admin";
+    } else if (username === "gurubk" && password === "bk123") {
+      authenticated = true;
+      nama = "Filmayenti, S.Pd";
+      userRole = "Koordinator BK";
+    } else if (username === "walikelas" && password === "wali123") {
+      authenticated = true;
+      nama = "Wali Kelas";
+      kelas = "XI-IPA-1"; // Wali kelas kelas XI-IPA-1
+      userRole = "Wali Kelas";
+    }
+    
+    if (authenticated) {
+      const user: User = { username, role: userRole, nama, kelas };
+      const token = generateToken(user);
+      res.json({ success: true, token, user });
+    } else {
+      res.status(400).json({ success: false, message: "Kredensial salah atau Role tidak sesuai." });
+    }
+  } catch (err: any) {
+    console.error("[Login API] Error occurred during login:", err);
+    res.status(500).json({
+      success: false,
+      message: "Terjadi kesalahan internal pada server saat login.",
+      error: err.message || String(err)
+    });
   }
 });
 
