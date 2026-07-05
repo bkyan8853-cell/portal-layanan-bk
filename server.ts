@@ -2,7 +2,7 @@ import express from "express";
 import path from "path";
 import fs from "fs";
 import { fileURLToPath } from "url";
-import { Siswa, Pelanggaran, Pencatatan, Pembinaan, User, AppSettings, DashboardStats, Remisi, Absensi } from "./src/types";
+import { Siswa, Pelanggaran, Pencatatan, Pembinaan, User, AppSettings, DashboardStats, Remisi, Absensi } from "./src/types.ts";
 
 // Polyfill __dirname and __filename for ES Modules in Node.js safely
 let __filename = "";
@@ -661,6 +661,43 @@ function authMiddleware(req: express.Request, res: express.Response, next: expre
 }
 
 // ================= API ENDPOINTS =================
+
+// Health and Diagnostic API
+app.get("/api/health", (req, res) => {
+  res.json({ status: "ok", vercel: !!process.env.VERCEL, timestamp: new Date().toISOString() });
+});
+
+app.get("/api/diagnostic", (req, res) => {
+  let writeTest = "untested";
+  try {
+    const testPath = path.join("/tmp", "test-write.txt");
+    fs.writeFileSync(testPath, "hello vercel");
+    writeTest = fs.readFileSync(testPath, "utf-8");
+  } catch (err: any) {
+    writeTest = "error: " + err.message;
+  }
+
+  res.json({
+    status: "ok",
+    env: {
+      NODE_ENV: process.env.NODE_ENV,
+      VERCEL: process.env.VERCEL,
+      GOOGLE_SHEET_URL: process.env.GOOGLE_SHEET_URL ? "set" : "not set",
+      PORT: PORT
+    },
+    database: {
+      DATA_FILE: DATA_FILE,
+      exists: fs.existsSync(DATA_FILE),
+      siswaCount: db.siswa ? db.siswa.length : 0,
+      pencatatanCount: db.pencatatan ? db.pencatatan.length : 0,
+      pelanggaranCount: db.pelanggaran ? db.pelanggaran.length : 0,
+      pembinaanCount: db.pembinaan ? db.pembinaan.length : 0,
+      remisiCount: db.remisi ? db.remisi.length : 0,
+      absensiCount: db.absensi ? db.absensi.length : 0
+    },
+    writeTest
+  });
+});
 
 // Auth API
 app.post("/api/auth/login", (req, res) => {
