@@ -1,4 +1,4 @@
-import { Siswa, Pelanggaran, Pencatatan, Pembinaan, AppSettings, DashboardStats, User, UserRole, Remisi } from "../types";
+import { Siswa, Pelanggaran, Pencatatan, Pembinaan, AppSettings, DashboardStats, User, UserRole, Remisi, Absensi } from "../types";
 
 const API_BASE = "/api";
 
@@ -268,5 +268,28 @@ export const googleSheetApi = {
     await fetchWithAuth(`${API_BASE}/remisi/${id}`, {
       method: "DELETE"
     });
+  },
+
+  // Attendance (Absensi)
+  async getAttendance(tanggal?: string, kelas?: string): Promise<Absensi[]> {
+    let url = `${API_BASE}/attendance`;
+    const params = new URLSearchParams();
+    if (tanggal) params.append("tanggal", tanggal);
+    if (kelas) params.append("kelas", kelas);
+    
+    if (params.toString()) {
+      url += `?${params.toString()}`;
+    }
+    
+    const res = await fetchWithAuth<{ success: boolean; data: Absensi[] }>(url);
+    return res.data || [];
+  },
+
+  async saveAttendance(records: Partial<Absensi>[]): Promise<Absensi[]> {
+    const res = await fetchWithAuth<{ success: boolean; data: Absensi[] }>(`${API_BASE}/attendance`, {
+      method: "POST",
+      body: JSON.stringify(records)
+    });
+    return res.data;
   }
 };

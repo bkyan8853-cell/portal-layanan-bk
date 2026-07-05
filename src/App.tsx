@@ -18,8 +18,9 @@ import RemisiView from "./components/RemisiView";
 import LaporanView from "./components/LaporanView";
 import SettingsView from "./components/SettingsView";
 import SiswaDetailModal from "./components/SiswaDetailModal";
+import AbsensiView from "./components/AbsensiView";
 
-type ActiveTab = "dashboard" | "siswa" | "pelanggaran" | "pencatatan" | "remisi" | "laporan" | "settings";
+type ActiveTab = "dashboard" | "siswa" | "absensi" | "pelanggaran" | "pencatatan" | "remisi" | "laporan" | "settings";
 
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
@@ -58,12 +59,21 @@ export default function App() {
 
   useEffect(() => {
     // Muat user yang sedang login saat inisialisasi
-    const currentUser = getCurrentUser();
+    let currentUser = getCurrentUser();
+    if (currentUser && (currentUser.nama.includes("Endang") || currentUser.nama.includes("Setyawati") || currentUser.nama === "Dra. Endang Setyawati")) {
+      currentUser.nama = "Wali Kelas";
+      localStorage.setItem("user", JSON.stringify(currentUser));
+    }
     setUser(currentUser);
 
     // Daftarkan listener perubahan autentikasi
     const handleAuthChange = () => {
-      setUser(getCurrentUser());
+      let u = getCurrentUser();
+      if (u && (u.nama.includes("Endang") || u.nama.includes("Setyawati") || u.nama === "Dra. Endang Setyawati")) {
+        u.nama = "Wali Kelas";
+        localStorage.setItem("user", JSON.stringify(u));
+      }
+      setUser(u);
     };
     window.addEventListener("auth-change", handleAuthChange);
     return () => window.removeEventListener("auth-change", handleAuthChange);
@@ -93,6 +103,7 @@ export default function App() {
   const navItems = [
     { id: "dashboard", label: "Dashboard", icon: Award, roles: ["Admin", "Koordinator BK", "Wali Kelas"] },
     { id: "siswa", label: "Data Siswa", icon: Users, roles: ["Admin", "Koordinator BK", "Wali Kelas"] },
+    { id: "absensi", label: "Absensi Siswa", icon: UserCheck, roles: ["Admin", "Koordinator BK", "Wali Kelas"] },
     { id: "pelanggaran", label: "Master Pelanggaran", icon: Tag, roles: ["Admin", "Koordinator BK", "Wali Kelas"] },
     { id: "pencatatan", label: "Input Pelanggaran", icon: AlertTriangle, roles: ["Admin", "Koordinator BK"] },
     { id: "remisi", label: "Remisi Poin", icon: ShieldCheck, roles: ["Admin", "Koordinator BK"] },
@@ -117,7 +128,7 @@ export default function App() {
               </div>
               <div>
                 <h1 className="font-black text-white text-sm tracking-widest leading-none">SIPPS</h1>
-                <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider block mt-0.5">YAN EDUCATIONAL INSTITUTION</span>
+                <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider block mt-0.5">SMAN 4 KOTA TANGERANG SELATAN</span>
               </div>
             </div>
             
@@ -141,7 +152,9 @@ export default function App() {
                 <span className={`inline-block w-1.5 h-1.5 rounded-full ${
                   user.role === "Admin" ? "bg-red-500" : user.role === "Koordinator BK" ? "bg-emerald-500" : "bg-amber-500"
                 }`} />
-                <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">{user.role}</span>
+                <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">
+                  {user.role === "Wali Kelas" ? "JENDELA WALI KELAS" : user.role}
+                </span>
               </div>
             </div>
           </div>
@@ -192,17 +205,6 @@ export default function App() {
               </span>
             </button>
           </div>
-        </div>
-
-        {/* Sidebar Footer Logout Button */}
-        <div className="p-4 border-t border-slate-800/80 hidden md:block">
-          <button
-            onClick={handleLogoutClick}
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold text-red-400 hover:bg-red-950/20 hover:text-red-300 transition-colors cursor-pointer"
-          >
-            <LogOut className="h-4.5 w-4.5 text-red-400/80" />
-            Keluar Aplikasi
-          </button>
         </div>
 
       </aside>
@@ -263,25 +265,34 @@ export default function App() {
               </span>
             </button>
 
-            <button
-              onClick={() => {
-                setMobileMenuOpen(false);
-                handleLogoutClick();
-              }}
-              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold text-red-400 hover:bg-red-950/20 transition-all cursor-pointer"
-            >
-              <LogOut className="h-4.5 w-4.5" />
-              Keluar Aplikasi
-            </button>
           </motion.div>
         )}
       </AnimatePresence>
-
+      
       {/* 3. MAIN APP WORKSPACE CONTAINER */}
-      <main className="flex-1 p-6 md:p-10 max-w-7xl mx-auto w-full transition-all print:p-0 print:max-w-none print:mx-0">
-        
-        {/* Dynamic Section Renderer */}
-        <div className="relative">
+      <main className="flex-1 flex flex-col min-h-screen">
+        {/* Top Header Bar (Hides on standard system print) */}
+        <header className="bg-white border-b border-slate-200 px-6 py-4 md:px-10 flex items-center justify-between shrink-0 print:hidden shadow-xs">
+          <div className="flex items-center gap-2">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-blue-50 text-blue-800 border border-blue-100/50">
+              <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
+              {user.role === "Wali Kelas" ? "JENDELA WALI KELAS" : `${user.role} Panel`}
+            </span>
+          </div>
+          
+          <button
+            onClick={handleLogoutClick}
+            className="flex items-center gap-2 px-3.5 py-2 bg-red-50 hover:bg-red-100 active:bg-red-200 text-red-600 hover:text-red-700 rounded-xl text-xs font-bold shadow-sm border border-red-200/50 hover:border-red-300 transition-all cursor-pointer"
+          >
+            <LogOut className="h-4 w-4" />
+            <span>Keluar Aplikasi</span>
+          </button>
+        </header>
+
+        <div className="flex-1 p-6 md:p-10 max-w-7xl w-full mx-auto transition-all print:p-0 print:max-w-none print:mx-0">
+          
+          {/* Dynamic Section Renderer */}
+          <div className="relative">
           {allowedNavItems.some(item => item.id === "dashboard") && (
             <div className={activeTab === "dashboard" ? "block" : "hidden"}>
               <motion.div
@@ -302,6 +313,18 @@ export default function App() {
                 transition={{ duration: 0.15 }}
               >
                 <SiswaView onViewDetail={handleViewStudentDetail} isActive={activeTab === "siswa"} />
+              </motion.div>
+            </div>
+          )}
+
+          {allowedNavItems.some(item => item.id === "absensi") && (
+            <div className={activeTab === "absensi" ? "block" : "hidden"}>
+              <motion.div
+                initial={{ opacity: 0, y: 5 }}
+                animate={activeTab === "absensi" ? { opacity: 1, y: 0 } : {}}
+                transition={{ duration: 0.15 }}
+              >
+                <AbsensiView isActive={activeTab === "absensi"} />
               </motion.div>
             </div>
           )}
@@ -367,7 +390,8 @@ export default function App() {
           )}
         </div>
 
-      </main>
+      </div>
+    </main>
 
       {/* 4. MODAL DETIL REFERENSI SISWA (BISA DIAKSES DARI MANA SAJA) */}
       <AnimatePresence>

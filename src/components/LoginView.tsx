@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { googleSheetApi } from "../services/googleSheetApi";
 import { UserRole } from "../types";
-import { Shield, BookOpen, UserCheck, Lock, User as UserIcon, AlertCircle, Loader2 } from "lucide-react";
+import { Shield, BookOpen, UserCheck, Lock, User as UserIcon, AlertCircle, Loader2, GraduationCap } from "lucide-react";
 import { motion } from "motion/react";
 
 interface LoginViewProps {
@@ -14,6 +14,18 @@ export default function LoginView({ onLoginSuccess }: LoginViewProps) {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  const handleUsernameChange = (val: string) => {
+    setUsername(val);
+    const cleanVal = val.toLowerCase().trim();
+    if (cleanVal === "admin") {
+      setRole("Admin");
+    } else if (cleanVal === "gurubk") {
+      setRole("Koordinator BK");
+    } else if (cleanVal === "walikelas") {
+      setRole("Wali Kelas");
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -44,14 +56,19 @@ export default function LoginView({ onLoginSuccess }: LoginViewProps) {
           <div className="mx-auto h-16 w-16 bg-blue-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-blue-200">
             <BookOpen className="h-9 w-9" />
           </div>
-          <h2 className="mt-6 text-xl sm:text-2xl font-black text-slate-900 tracking-tight leading-snug">
-            PORTAL LAYANAN BIMBINGAN KONSELING PINTAR
+          <h2 className="mt-6 tracking-tight leading-tight">
+            <span className="block text-[11px] sm:text-xs font-black uppercase tracking-[0.2em] text-blue-600 mb-1.5">
+              PORTAL LAYANAN
+            </span>
+            <span className="block text-xl sm:text-2xl font-black text-slate-900 leading-tight">
+              BIMBINGAN & KONSELING PINTAR
+            </span>
           </h2>
           <p className="mt-2 text-sm text-slate-500 font-medium">
             Sistem Pencatatan Pelanggaran Siswa
           </p>
           <span className="inline-flex items-center mt-2 px-3 py-1 rounded-full text-center text-xs font-bold bg-blue-50 text-blue-800 leading-normal">
-            SMP, SMA, SMK Yayasan Adiana Nusantara
+            SMAN 4 KOTA TANGERANG SELATAN
           </span>
         </div>
 
@@ -73,8 +90,8 @@ export default function LoginView({ onLoginSuccess }: LoginViewProps) {
             <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
               PILIH ROLE AKSES
             </label>
-            <div className="grid grid-cols-2 gap-2 p-1 bg-slate-100 rounded-xl">
-              {(["Admin", "Koordinator BK"] as UserRole[]).map((r) => {
+            <div className="grid grid-cols-3 gap-2 p-1 bg-slate-100 rounded-xl">
+              {(["Admin", "Koordinator BK", "Wali Kelas"] as UserRole[]).map((r) => {
                 const isActive = role === r;
                 return (
                   <button
@@ -92,6 +109,7 @@ export default function LoginView({ onLoginSuccess }: LoginViewProps) {
                   >
                     {r === "Admin" && <Shield className="h-4 w-4" />}
                     {r === "Koordinator BK" && <UserCheck className="h-4 w-4" />}
+                    {r === "Wali Kelas" && <GraduationCap className="h-4 w-4" />}
                     {r}
                   </button>
                 );
@@ -115,7 +133,7 @@ export default function LoginView({ onLoginSuccess }: LoginViewProps) {
                   type="text"
                   required
                   value={username}
-                  onChange={(e) => setUsername(e.target.value)}
+                  onChange={(e) => handleUsernameChange(e.target.value)}
                   className="block w-full pl-10 pr-3 py-2.5 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm transition-colors"
                   placeholder="Masukkan username"
                 />

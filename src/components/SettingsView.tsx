@@ -410,7 +410,7 @@ export default function SettingsView({ isActive }: { isActive?: boolean }) {
     } else if (type === 'pencatatan') {
       fileName = `template_pencatatan_${delimiter === ';' ? 'excel' : 'sheets'}.csv`;
       headers = ['ID', 'Tanggal', 'NIS', 'Nama Siswa', 'Kelas', 'Pelanggaran', 'Poin', 'Petugas', 'Keterangan'].join(delimiter);
-      exampleRow = ['', '2026-06-30', '24001', 'Ahmad Rifai', 'XI-IPA-1', 'Terlambat Masuk Sekolah (< 15 menit)', '5', 'Iien Puspitasari, S.Pd (Koordinator BK)', 'Terlambat karena ban bocor'].join(delimiter);
+      exampleRow = ['', '2026-06-30', '24001', 'Ahmad Rifai', 'XI-IPA-1', 'Terlambat Masuk Sekolah (< 15 menit)', '5', 'Filmayenti, S.Pd (Koordinator BK)', 'Terlambat karena ban bocor'].join(delimiter);
     }
 
     const csvContent = "\uFEFF" + headers + "\n" + exampleRow + "\n";
@@ -448,8 +448,8 @@ export default function SettingsView({ isActive }: { isActive?: boolean }) {
       // Sheet 3: Pencatatan
       const pencatatanData = [
         ["ID", "Tanggal", "NIS", "Nama Siswa", "Kelas", "Pelanggaran", "Poin", "Petugas", "Keterangan"],
-        ["", "2026-06-30", "24001", "Ahmad Rifai", "XI-IPA-1", "Terlambat Masuk Sekolah (< 15 menit)", "5", "Iien Puspitasari, S.Pd (Koordinator BK)", "Terlambat karena ban bocor"],
-        ["", "2026-06-30", "24005", "Rian Hidayat", "XI-IPS-1", "Merokok di Lingkungan Sekolah", "25", "Iien Puspitasari, S.Pd (Koordinator BK)", "Tertangkap merokok di kantin belakang"]
+        ["", "2026-06-30", "24001", "Ahmad Rifai", "XI-IPA-1", "Terlambat Masuk Sekolah (< 15 menit)", "5", "Filmayenti, S.Pd (Koordinator BK)", "Terlambat karena ban bocor"],
+        ["", "2026-06-30", "24005", "Rian Hidayat", "XI-IPS-1", "Merokok di Lingkungan Sekolah", "25", "Filmayenti, S.Pd (Koordinator BK)", "Tertangkap merokok di kantin belakang"]
       ];
 
       const wb = XLSX.utils.book_new();

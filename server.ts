@@ -1,7 +1,7 @@
 import express from "express";
 import path from "path";
 import fs from "fs";
-import { Siswa, Pelanggaran, Pencatatan, Pembinaan, User, AppSettings, DashboardStats, Remisi } from "./src/types";
+import { Siswa, Pelanggaran, Pencatatan, Pembinaan, User, AppSettings, DashboardStats, Remisi, Absensi } from "./src/types";
 
 const app = express();
 const PORT = 3000;
@@ -126,11 +126,47 @@ const SEED_PELANGGARAN: Pelanggaran[] = [
 // Seed beberapa data pencatatan awal
 const SEED_PENCATATAN: Pencatatan[] = [
   { id: "rec1", tanggal: "2026-06-15", nis: "24001", namaSiswa: "Ahmad Rifai", kelas: "XI-IPA-1", pelanggaran: "Terlambat Masuk Sekolah (< 15 menit)", poin: 5, petugas: "Drs. Joko Susilo (Guru Piket)", keterangan: "Terlambat karena ban motor bocor" },
-  { id: "rec2", tanggal: "2026-06-16", nis: "24001", namaSiswa: "Ahmad Rifai", kelas: "XI-IPA-1", pelanggaran: "Rambut Gondrong / Tidak Rapi (Siswa Laki-laki)", poin: 10, petugas: "Iien Puspitasari, S.Pd (Koordinator BK)", keterangan: "Sudah ditegur sebelumnya" },
-  { id: "rec3", tanggal: "2026-06-18", nis: "24003", namaSiswa: "Budi Santoso", kelas: "XI-IPA-2", pelanggaran: "Membolos Sekolah / Meninggalkan Kelas Tanpa Izin", poin: 15, petugas: "Dra. Endang (Wali Kelas)", keterangan: "Melompati pagar belakang sekolah" },
-  { id: "rec4", tanggal: "2026-06-20", nis: "24005", namaSiswa: "Rian Hidayat", kelas: "XI-IPS-1", pelanggaran: "Merokok di Lingkungan Sekolah", poin: 25, petugas: "Iien Puspitasari, S.Pd (Koordinator BK)", keterangan: "Tertangkap merokok di kantin belakang" },
-  { id: "rec5", tanggal: "2026-06-25", nis: "24005", namaSiswa: "Rian Hidayat", kelas: "XI-IPS-1", pelanggaran: "Melakukan Bullying (Perundungan) Fisik/Verbal", poin: 50, petugas: "Iien Puspitasari, S.Pd (Koordinator BK)", keterangan: "Mengintimidasi siswa kelas X" },
+  { id: "rec2", tanggal: "2026-06-16", nis: "24001", namaSiswa: "Ahmad Rifai", kelas: "XI-IPA-1", pelanggaran: "Rambut Gondrong / Tidak Rapi (Siswa Laki-laki)", poin: 10, petugas: "Filmayenti, S.Pd (Koordinator BK)", keterangan: "Sudah ditegur sebelumnya" },
+  { id: "rec3", tanggal: "2026-06-18", nis: "24003", namaSiswa: "Budi Santoso", kelas: "XI-IPA-2", pelanggaran: "Membolos Sekolah / Meninggalkan Kelas Tanpa Izin", poin: 15, petugas: "Wali Kelas", keterangan: "Melompati pagar belakang sekolah" },
+  { id: "rec4", tanggal: "2026-06-20", nis: "24005", namaSiswa: "Rian Hidayat", kelas: "XI-IPS-1", pelanggaran: "Merokok di Lingkungan Sekolah", poin: 25, petugas: "Filmayenti, S.Pd (Koordinator BK)", keterangan: "Tertangkap merokok di kantin belakang" },
+  { id: "rec5", tanggal: "2026-06-25", nis: "24005", namaSiswa: "Rian Hidayat", kelas: "XI-IPS-1", pelanggaran: "Melakukan Bullying (Perundungan) Fisik/Verbal", poin: 50, petugas: "Filmayenti, S.Pd (Koordinator BK)", keterangan: "Mengintimidasi siswa kelas X" },
   { id: "rec6", tanggal: "2026-06-28", nis: "24007", namaSiswa: "Eko Prasetyo", kelas: "XII-IPA-1", pelanggaran: "Atribut Seragam Tidak Lengkap", poin: 5, petugas: "Siti Rahma, S.Pd (Guru Piket)", keterangan: "Tidak memakai sabuk sekolah" }
+];
+
+// Seed beberapa data absensi awal
+const SEED_ABSENSI: Absensi[] = [
+  // Mei 2026
+  { id: "ab1", tanggal: "2026-05-18", nis: "24001", namaSiswa: "Ahmad Rifai", kelas: "XI-IPA-1", status: "Hadir", keterangan: "" },
+  { id: "ab2", tanggal: "2026-05-18", nis: "24002", namaSiswa: "Siti Aminah", kelas: "XI-IPA-1", status: "Hadir", keterangan: "" },
+  { id: "ab3", tanggal: "2026-05-18", nis: "24003", namaSiswa: "Budi Santoso", kelas: "XI-IPA-2", status: "Izin", keterangan: "Acara keluarga" },
+  { id: "ab4", tanggal: "2026-05-18", nis: "24004", namaSiswa: "Dewi Lestari", kelas: "XI-IPA-2", status: "Hadir", keterangan: "" },
+  { id: "ab5", tanggal: "2026-05-18", nis: "24005", namaSiswa: "Rian Hidayat", kelas: "XI-IPS-1", status: "Alfa", keterangan: "Tanpa keterangan" },
+
+  // Juni 2026
+  { id: "ab6", tanggal: "2026-06-15", nis: "24001", namaSiswa: "Ahmad Rifai", kelas: "XI-IPA-1", status: "Hadir", keterangan: "" },
+  { id: "ab7", tanggal: "2026-06-15", nis: "24002", namaSiswa: "Siti Aminah", kelas: "XI-IPA-1", status: "Sakit", keterangan: "Demam" },
+  { id: "ab8", tanggal: "2026-06-15", nis: "24003", namaSiswa: "Budi Santoso", kelas: "XI-IPA-2", status: "Hadir", keterangan: "" },
+  { id: "ab9", tanggal: "2026-06-15", nis: "24004", namaSiswa: "Dewi Lestari", kelas: "XI-IPA-2", status: "Hadir", keterangan: "" },
+  { id: "ab10", tanggal: "2026-06-15", nis: "24005", namaSiswa: "Rian Hidayat", kelas: "XI-IPS-1", status: "Hadir", keterangan: "" },
+
+  { id: "ab11", tanggal: "2026-06-16", nis: "24001", namaSiswa: "Ahmad Rifai", kelas: "XI-IPA-1", status: "Hadir", keterangan: "" },
+  { id: "ab12", tanggal: "2026-06-16", nis: "24002", namaSiswa: "Siti Aminah", kelas: "XI-IPA-1", status: "Hadir", keterangan: "" },
+  { id: "ab13", tanggal: "2026-06-16", nis: "24003", namaSiswa: "Budi Santoso", kelas: "XI-IPA-2", status: "Hadir", keterangan: "" },
+  { id: "ab14", tanggal: "2026-06-16", nis: "24004", namaSiswa: "Dewi Lestari", kelas: "XI-IPA-2", status: "Hadir", keterangan: "" },
+  { id: "ab15", tanggal: "2026-06-16", nis: "24005", namaSiswa: "Rian Hidayat", kelas: "XI-IPS-1", status: "Izin", keterangan: "Ke luar kota" },
+
+  // Juli 2026
+  { id: "ab16", tanggal: "2026-07-01", nis: "24001", namaSiswa: "Ahmad Rifai", kelas: "XI-IPA-1", status: "Hadir", keterangan: "" },
+  { id: "ab17", tanggal: "2026-07-01", nis: "24002", namaSiswa: "Siti Aminah", kelas: "XI-IPA-1", status: "Hadir", keterangan: "" },
+  { id: "ab18", tanggal: "2026-07-01", nis: "24003", namaSiswa: "Budi Santoso", kelas: "XI-IPA-2", status: "Alfa", keterangan: "Bolos sekolah" },
+  { id: "ab19", tanggal: "2026-07-01", nis: "24004", namaSiswa: "Dewi Lestari", kelas: "XI-IPA-2", status: "Hadir", keterangan: "" },
+  { id: "ab20", tanggal: "2026-07-01", nis: "24005", namaSiswa: "Rian Hidayat", kelas: "XI-IPS-1", status: "Hadir", keterangan: "" },
+
+  { id: "ab21", tanggal: "2026-07-02", nis: "24001", namaSiswa: "Ahmad Rifai", kelas: "XI-IPA-1", status: "Hadir", keterangan: "" },
+  { id: "ab22", tanggal: "2026-07-02", nis: "24002", namaSiswa: "Siti Aminah", kelas: "XI-IPA-1", status: "Hadir", keterangan: "" },
+  { id: "ab23", tanggal: "2026-07-02", nis: "24003", namaSiswa: "Budi Santoso", kelas: "XI-IPA-2", status: "Hadir", keterangan: "" },
+  { id: "ab24", tanggal: "2026-07-02", nis: "24004", namaSiswa: "Dewi Lestari", kelas: "XI-IPA-2", status: "Sakit", keterangan: "Sakit gigi" },
+  { id: "ab25", tanggal: "2026-07-02", nis: "24005", namaSiswa: "Rian Hidayat", kelas: "XI-IPS-1", status: "Hadir", keterangan: "" }
 ];
 
 interface LocalDatabase {
@@ -139,6 +175,7 @@ interface LocalDatabase {
   pencatatan: Pencatatan[];
   pembinaan: Pembinaan[];
   remisi: Remisi[];
+  absensi: Absensi[];
   settings: AppSettings;
 }
 
@@ -149,6 +186,7 @@ let db: LocalDatabase = {
   pencatatan: SEED_PENCATATAN,
   pembinaan: [],
   remisi: [],
+  absensi: SEED_ABSENSI,
   settings: {
     googleSheetUrl: "",
     syncEnabled: false
@@ -259,6 +297,7 @@ function loadDatabase() {
           pencatatan: Array.isArray(parsed.pencatatan) ? parsed.pencatatan : SEED_PENCATATAN,
           pembinaan: Array.isArray(parsed.pembinaan) ? parsed.pembinaan : [],
           remisi: Array.isArray(parsed.remisi) ? parsed.remisi : [],
+          absensi: Array.isArray(parsed.absensi) ? parsed.absensi : SEED_ABSENSI,
           settings: parsed.settings ? {
             googleSheetUrl: parsed.settings.googleSheetUrl || "",
             syncEnabled: typeof parsed.settings.syncEnabled === "boolean" ? parsed.settings.syncEnabled : false
@@ -576,21 +615,25 @@ app.post("/api/auth/login", (req, res) => {
   let authenticated = false;
   let nama = "";
   let kelas: string | undefined = undefined;
+  let userRole = role;
   
-  if (role === "Admin" && username === "admin" && password === "admin123") {
+  if (username === "admin" && password === "admin123") {
     authenticated = true;
     nama = "Admin Utama BK";
-  } else if (role === "Koordinator BK" && username === "gurubk" && password === "bk123") {
+    userRole = "Admin";
+  } else if (username === "gurubk" && password === "bk123") {
     authenticated = true;
-    nama = "Iien Puspitasari, S.Pd";
-  } else if (role === "Wali Kelas" && username === "walikelas" && password === "wali123") {
+    nama = "Filmayenti, S.Pd";
+    userRole = "Koordinator BK";
+  } else if (username === "walikelas" && password === "wali123") {
     authenticated = true;
-    nama = "Dra. Endang Setyawati";
+    nama = "Wali Kelas";
     kelas = "XI-IPA-1"; // Wali kelas kelas XI-IPA-1
+    userRole = "Wali Kelas";
   }
   
   if (authenticated) {
-    const user: User = { username, role, nama, kelas };
+    const user: User = { username, role: userRole, nama, kelas };
     const token = generateToken(user);
     res.json({ success: true, token, user });
   } else {
@@ -1136,6 +1179,86 @@ app.delete("/api/remisi/:id", authMiddleware, async (req, res) => {
   saveDatabase();
 
   res.json({ success: true, message: "Data remisi berhasil dihapus." });
+});
+
+// ABSENSI API
+app.get("/api/attendance", authMiddleware, async (req, res) => {
+  try {
+    const { tanggal, kelas } = req.query;
+    let filtered = db.absensi || [];
+    
+    if (tanggal) {
+      filtered = filtered.filter(a => a.tanggal === String(tanggal));
+    }
+    if (kelas) {
+      filtered = filtered.filter(a => a.kelas === String(kelas));
+    }
+    
+    res.json({ success: true, data: filtered });
+  } catch (err: any) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+app.post("/api/attendance", authMiddleware, async (req, res) => {
+  try {
+    const user = (req as any).user as User;
+    const body = req.body;
+    const records: Absensi[] = Array.isArray(body) ? body : [body];
+
+    if (!db.absensi) {
+      db.absensi = [];
+    }
+
+    const savedRecords: Absensi[] = [];
+
+    for (const rec of records) {
+      if (!rec.tanggal || !rec.nis || !rec.status) {
+        continue;
+      }
+
+      const student = db.siswa.find(s => s.nis === rec.nis);
+      const namaSiswa = student ? student.nama : (rec.namaSiswa || "");
+      const kelas = student ? student.kelas : (rec.kelas || "");
+
+      // Cari apakah sudah ada record absensi untuk tanggal & NIS ini
+      const existingIndex = db.absensi.findIndex(
+        a => a.tanggal === rec.tanggal && a.nis === rec.nis
+      );
+
+      const attendanceRecord: Absensi = {
+        id: existingIndex !== -1 ? db.absensi[existingIndex].id : "ab-" + Date.now() + "-" + Math.random().toString(36).substring(2, 6),
+        tanggal: rec.tanggal,
+        nis: rec.nis,
+        namaSiswa,
+        kelas,
+        status: rec.status,
+        keterangan: rec.keterangan || ""
+      };
+
+      if (existingIndex !== -1) {
+        db.absensi[existingIndex] = attendanceRecord;
+      } else {
+        db.absensi.push(attendanceRecord);
+      }
+      savedRecords.push(attendanceRecord);
+    }
+
+    saveDatabase();
+
+    // Opsional: Sinkronisasi ke Google Sheet jika sync enabled
+    if (db.settings.syncEnabled) {
+      for (const rec of savedRecords) {
+        postToGoogleSheet("addAttendance", rec).catch(err => {
+          console.error("Gagal sync record absensi ke Sheets:", err);
+        });
+      }
+    }
+
+    res.json({ success: true, data: savedRecords, message: "Absensi berhasil disimpan." });
+  } catch (err: any) {
+    res.status(500).json({ success: false, message: err.message });
+  }
 });
 
 // ================= VITE DEV / PRODUCTION SERVING =================

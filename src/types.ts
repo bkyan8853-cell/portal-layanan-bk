@@ -62,6 +62,16 @@ export interface Remisi {
   petugas: string;
 }
 
+export interface Absensi {
+  id: string;
+  tanggal: string; // YYYY-MM-DD
+  nis: string;
+  namaSiswa: string;
+  kelas: string;
+  status: 'Hadir' | 'Sakit' | 'Izin' | 'Alfa';
+  keterangan: string;
+}
+
 export interface DashboardStats {
   totalSiswa: number;
   pelanggaranHariIni: number;
